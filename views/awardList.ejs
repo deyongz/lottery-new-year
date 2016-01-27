@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>中奖结果-聚美优品2015成都年会</title>
+    <script type="text/javascript" src="/js/jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="/js/jquery.json-2.4.js"></script>
+    <script type="text/javascript" src="/js/jquery.websocket-0.0.1.js"></script>
+    <script type="text/javascript" src="/js/socket.io.js"></script>
+    <style type="text/css">
+        body,tr,th,table,td,div,span,p,a{font-size:14px;}
+        .systemStatus{line-height:30px;padding:0 10px;border:1px solid #ccc;background:#C7A20D;}
+        .systemStatus span{color:red;font-weight:bold;}
+
+        tr{background:#fff;height:22px;line-height:22px;}
+        tr:hover{background:red;color:#fff;}
+        tr:hover a{color:#fff;}
+        .btnsWrap{text-align:center;}
+        td{word-break:break-all;white-space:normal}
+        div{text-align:center;}
+        .itemGroup{border:1px solid #000000;max-width:900px;margin:0 auto;}
+
+        h1{color:#fff;font-size:20px;background:red;margin-top: 0;}
+        h2{color:blue;font-size:16px;}
+        h3{font-size:14px;}
+        .weixinUserWrap {padding:5px;display:inline-block;}
+        .weixinUserWrap img{width:60px;height:60px;}
+    </style>
+</head>
+<body>
+<div class="itemGroup">
+    <div><h1>微信中奖结果</h1></div>
+    <% var j=0;for(var key in weixinWheelAward){  var award = weixinWheelAward[key];j++;if(award){%>
+        <div><h2>第<%=j%>轮</h2></div>
+        <div>
+        <% for(var i in award){var user = allUserInfo[award[i]];%>
+            <div class="weixinUserWrap">
+                <img src="<%=user.headimgurl%>"><br/>
+                <%=user.nickname%>
+            </div>
+        <% } %>
+        </div>
+    <% }} %>
+
+
+    <div><h1>号码中奖结果</h1></div>
+    <% var j=0;for(var key in ticketWheelAward){  var award = ticketWheelAward[key];j++;if(award){%>
+        <div><h2><%=j%>等奖</h2></div>
+        <% var h=0;for(var a in award){ var whee = award[a];h++;if(whee){%>
+            <div><h3>第<%=h%>轮</h3></div>
+            <div>
+            <% for(var i in whee){var user = whee[i];%>
+                <%=user%>,
+            <% } %>
+            </div>
+        <% }} %>
+    <% }} %>
+</div>
+</body>
+</html>

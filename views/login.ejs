@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>聚美优品2015成都年会-抽奖互动系统</title>
+    <script type="text/javascript" src="/js/jquery-1.4.2.js"></script>
+</head>
+<body>
+<h1 style="text-align: center;color:red;">聚美优品2016成都年会-抽奖互动系统</h1>
+<div style="width: 200px;height: 100px;border:1px solid #ccc;margin:0 auto;padding:15px;">
+    <div style="color:red;"><%=loginError%></div>
+    <form method="post" action="/check">
+        <input type="hidden" name="action" value="login">
+    账号：<input type="text" name="username"><br/>
+    密码：<input type="password" name="password"><br/>
+    <button type="submit">确定</button>
+    </form>
+</div>
+<div style="padding:30px;">
+    <div style="padding:15px;border:1px solid #ccc;">
+    <h1 style="text-align: center">使用帮助</h1>
+    <p><strong  style="font-size:18px;color:red;">后台审核消息使用说明：</strong></p>
+        <p style="padding-left:24px;font-weight:bold;">系统状态：</p>
+            <p  style="padding-left:48px;">审核通过人数：表示用户发送的微信只要有一条通过审核，就可以有资格参与抽奖，如果人数低于中奖需要的人数，系统会报错，并且停止运行。在抽奖前，必须审核通过的人数大于中奖的数量。</p>
+            <p  style="padding-left:48px;">消息找不到用户信息错误：此数据用于系统调试使用，此数据越大，表示系统内部运行出错的人数较多。</p>
+            <p  style="padding-left:48px;">未到大屏幕显示的消息：通过审核的消息，还没有到大屏幕去显示的数量。</p>
+            <p  style="padding-left:48px;">暂停推送消息到大屏幕：此按钮可以控制当前审核过的消息，以及未来审核过的消息，暂停到大屏幕显示，再次点击此按钮，可以继续显示。</p>
+            <p  style="padding-left:48px;">清空消息队列：可以清除《未到大屏幕显示的消息》的所有消息。例如当前数据非常多，不利于再到大屏幕显示，使用此功能清空消息队列。</p>
+
+        <p style="padding-left:24px;font-weight:bold;">消息审核说明：</p>
+            <p style="padding-left:48px;">消息审核有批量和单个审核的功能</p>
+            <p style="padding-left:48px;">批量审核要点：</p>
+            <p style="padding-left:48px;">1.可以单击消息的一行快速勾选和取消勾选；</p>
+            <p style="padding-left:48px;">2.在使用《全选》功能的时候，由于用户新发送的消息会立即显示到列表当中，所以应该先全选，然后在查看被勾选的消息是否能通过，不能通过的把勾选匡去掉，然后点击《批量通过》。</p>
+            <p style="padding-left:48px;">3.在多个人使用后台审核功能时，由于系统还未完善，不能把最新的消息主动推送到多个审核列表，请经常刷新审核列表界面审核消息；单个人使用审核消息不存在此问题。</p>
+
+    <p></p>
+    <p><strong style="font-size:18px;color:red;">前台抽奖使用说明：</strong></p>
+        <p style="padding-left:24px;">所有功能使用快捷键；抽奖有微信互动抽奖和号码抽奖，“w”按键切换到微信抽奖，“h”按键切换到号码抽奖</p>
+        <p style="padding-left:24px;">抽奖分了多轮抽奖，数字键1-9，可以快速切换到哪一轮抽奖；如果按3按键，但是没有第三轮抽奖，系统不予响应。</p>
+        <p style="padding-left:24px;font-weight:bold;">微信抽奖流程：</p>
+            <p style="padding-left:48px;">1.按“w”按键，切换到微信抽奖界面</p>
+            <p style="padding-left:48px;">2.按1-9按键，例如第一轮按“1”按键</p>
+            <p style="padding-left:48px;">3.按“s”按键，撒一堆头像在界面上</p>
+            <p style="padding-left:48px;">4.按“r”按键，run，运行抽奖过程闪动动画</p>
+            <p style="padding-left:48px;">5.按“p”按键，pause，停止抽奖过程闪动动画，并执行显示抽奖结果</p>
+            <p style="padding-left:48px;">抽第二轮，第三轮，循环2-5的步骤。按已经抽过奖的轮数，界面会显示中奖列表。</p>
+
+        <p style="padding-left:24px;font-weight:bold;">号码抽奖流程：</p>
+            <p style="padding-left:48px;">号码抽奖和微信抽奖多一个选择(一等奖|二等奖|三等奖)的功能外，其他一样操作流程，具体如下：</p>
+            <p style="padding-left:48px;">1.按“h”按键，切换到号码抽奖界面</p>
+            <p style="padding-left:48px;">2.按住“shift”按键不动，再按“1-9”按键，切换到对应数字按键的第几等奖，默认第一轮抽奖，例如切换到三等奖的第一轮抽奖，按shift+3</p>
+            <p style="padding-left:48px;">3.按1-9按键，例如第二轮按“2”按键</p>
+            <p style="padding-left:48px;">4.按“s”按键，撒一堆头像在界面上</p>
+            <p style="padding-left:48px;">5.按“r”按键，run，运行抽奖过程闪动动画</p>
+            <p style="padding-left:48px;">6.按“p”按键，pause，停止抽奖过程闪动动画，并执行显示抽奖结果</p>
+            <p style="padding-left:48px;">抽第二轮，第三轮，循环3-5的步骤。抽下一个等级的奖，循环2-6的步骤；按已经抽过奖的奖品等级或者轮数，界面会显示中奖列表。</p>
+    </div>
+</div>
+</body>
+</html>

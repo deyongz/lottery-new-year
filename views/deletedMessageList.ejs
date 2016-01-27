@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>被删除的消息</title>
+    <style type="text/css">
+        tr{background:#fff;height:22px;line-height:22px;}
+        tr:hover{background:red;color:#fff;}
+        tr:hover a{color:#fff;}
+        .btnsWrap{text-align:center;}
+        td{word-break:break-all;white-space:normal;vertical-align: middle;}
+        td img{width:30px;height:30px;vertical-align: middle;}
+    </style>
+</head>
+<body>
+<div>
+<script type="text/javascript">
+
+</script>
+    <table style="background:#333;" width="100%" id="messageList">
+        <tr>
+            <th width=80>序号</th>
+            <th width=180>微信名称</th>
+            <th>内容</th>
+        </tr>
+        <% for(var i in deletedMessageList){ var message = deletedMessageList[i];if(message){%>
+        <tr>
+            <td><%=message.key%></td>
+            <td><img src="<%=message.headimgurl%>"> <%=message.nickname%></td>
+            <td><%=message.msg%></td>
+
+        </tr>
+        <% }} %>
+    </table>
+</div>
+</body>
+</html>

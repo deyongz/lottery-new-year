@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>待审核消息列表</title>
+    <script type="text/javascript" src="/js/jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="/js/jquery.json-2.4.js"></script>
+    <script type="text/javascript" src="/js/jquery.websocket-0.0.1.js"></script>
+    <script type="text/javascript" src="/js/socket.io.js"></script>
+    <style type="text/css">
+        body,tr,th,table,td,div,span,p,a{font-size:14px;}
+        .systemStatus{line-height:30px;padding:0 10px;border:1px solid #ccc;background:#C7A20D;}
+        .systemStatus span{color:red;font-weight:bold;}
+
+        tr{background:#fff;height:22px;line-height:22px;}
+        tr:hover{background:red;color:#fff;}
+        tr:hover a{color:#fff;}
+        .btnsWrap{text-align:center;}
+        td{word-break:break-all;white-space:normal;vertical-align: middle;}
+        td img{width:30px;height:30px;vertical-align: middle;}
+    </style>
+    <script type="text/javascript">
+        var serverInfo = {serverUrl :"<%=serverInfo.serverUrl%>",serverHttpPort:"<%=serverInfo.serverHttpPort%>",socketPort:"<%=serverInfo.socketPort%>"}
+    </script>
+</head>
+<body>
+<div class="systemStatus">
+    <strong>系统状态：</strong>
+        总收到消息条数：<span class="totalMessageNum"><%=systemNums.checkedLength+systemNums.pendingLength+systemNums.deletedCount%></span>条，
+        已审核：<span class="checkedMessageNum"><%=systemNums.checkedLength%></span>条，
+        未审核：<span class="pendingMessageNum"><%=systemNums.pendingLength%></span>条，
+        被删除:<span class="deletedMessageNum"><%=systemNums.deletedCount%></span>条，
+        参与总人数：<span class="totalMemberNum"><%=systemNums.userLength%></span>，
+        审核通过人数：<span class="canAwardUserCount"><%=systemNums.canAwardUserCount%></span>，
+        未到大屏幕显示的消息：<span class="toViewMessageNum"><%=systemNums.toSwfLength%></span>条；
+        消息找不到用户信息错误：<span class="errorMessageCount"><%=systemNums.errorMessageCount%></span>条；<br/>
+    <a href="javascript:void(0);" class="pauseBtn">暂停推送消息到大屏幕</a> |  <a href="javascript:void(0);" class="boomBtn">开启全屏爆炸文字</a> |  <a href="javascript:void(0);" class="cleanToSwfMessageBtn">清空消息队列</a>  |  <a href="javascript:void(0);" class="viewAllMessageCheckedListBtn" style="color:red;">年会结束把所有消息爆炸滚动一遍</a>
+</div>
+<div style="padding-top:20px;line-height:24px;">批量操作：<a href="javascript:void(0);" id="batchSelectAll">全选</a>
+    | <a href="javascript:void(0);"  id="batchPass">批量通过</a>
+    | <a href="javascript:void(0);"  id="batchDel">批量删除</a>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+    <a href="/check?action=award" target="_blank" style="color:red;">中奖结果</a> | <a href="javascript:void(0);" id="clearAllData">清空所有数据</a> | <a target="_blank"  href="/check/allUsers">所有参与人员列表</a> |  <a target="_blank" href="/check/deleted">被删除消息</a> | <a href="/check?action=loginout" style="color:blue;">退出登陆</a></div>
+<table style="background:#333;" width="100%" id="messageList">
+    <tr>
+        <th width=80>序号</th>
+        <th width=180>微信名称</th>
+        <th>内容</th>
+        <th width=100>操作</th>
+    </tr>
+    <% for(var i in messageList){ var message = messageList[i];if(message){%>
+    <tr>
+        <td><input type="checkbox" messageID="<%=message.key%>"> <%=message.key%></td>
+        <td><img src="<%=message.headimgurl%>"> <%=message.nickname%></td>
+        <td><%=message.msg%></td>
+        <td class="btnsWrap">
+            <a class="passBtn" href="javascript:void(0);" messageID=<%=message.key%>>通过</a>&nbsp;|&nbsp;
+            <a class="delBtn" href="javascript:void(0);" messageID=<%=message.key%>>删除</a> <!--&nbsp;|&nbsp;
+            <a class="blackBtn" href="javascript:void(0);" messageID=<%=message.key%>>拉入黑名单</a>-->
+        </td>
+    </tr>
+    <% }} %>
+</table>
+
+<script type="text/javascript">
+
+    var passMessage = function(messageIDs,callback){
+        $.post("/check",{action:"pass",messageID:messageIDs},function(req){
+            //console.log(req);
+            if(req.status){
+                pendingMessageNum-=messageIDs.length;
+                $(".pendingMessageNum").html(pendingMessageNum);
+            }
+            if(callback){callback()}
+        },"json");
+
+
+    };
+    var delMessage = function(messageIDs,callback){
+        $.post("/check",{action:"delete",messageID:messageIDs},function(req){
+            //console.log(req);
+            if(req.status){
+                pendingMessageNum-=messageIDs.length;
+                $(".pendingMessageNum").html(pendingMessageNum);
+            }
+            if(callback){callback()}
+        },"json");
+    };
+    var pendingMessageNum = Number($(".pendingMessageNum").html());
+    var lastToViewMessageNum = false;
+
+    var onPassBtnClick = function(){
+        var _this = $(this);
+        var messageID = _this.attr("messageID");
+        passMessage([messageID],function(){
+            _this.parent().parent().remove();
+        });
+        return false;
+    };
+    var onDelBtnClick = function(){
+        var _this = $(this);
+        var messageID = _this.attr("messageID");
+        delMessage([messageID],function(){
+            _this.parent().parent().remove();
+        });
+
+        return false;
+    };
+
+    var socket = io(serverInfo.serverUrl+":"+serverInfo.socketPort);
+    socket.on('pendingMessage', function (message) {
+        $(".pendingMessageNum").html(++pendingMessageNum);
+
+        //console.log(messageList.length);
+        $("#messageList").append($('\
+            <tr >\
+                <td><input type="checkbox" messageID="'+message.key+'">'+message.key+'</td>\
+                <td><img src="'+message.headimgurl+'">'+message.nickname+'</td>\
+                <td>'+message.msg+'</td>\
+                <td  class="btnsWrap">\
+                    <a class="passBtn" href="javascript:void(0);" messageID='+message.key+'>通过</a>&nbsp;|&nbsp;\
+                    <a class="delBtn" href="javascript:void(0);" messageID='+message.key+'>删除</a>\
+                </td>\
+            </tr>'));
+        //socket.emit('my other event', { my: 'data' });
+    });
+    socket.on("cleanToSwfMessage",function(){
+        //$("#messageList tr:gt(0)").remove();
+        //$(".pendingMessageNum").html(0);
+        //pendingMessageNum = 0;
+    });
+    socket.on("pausePushToView",function(toViewMessageNum){
+        if(lastToViewMessageNum==toViewMessageNum){return;}
+        lastToViewMessageNum = toViewMessageNum;
+        $(".pauseBtn").html(toViewMessageNum?"启动推送消息到大屏幕":"暂停推送消息到大屏幕");
+    });
+    socket.on("boomView",function(boom){
+        $(".boomBtn").html(boom?"关闭全屏爆炸文字":"开启全屏爆炸文字");
+    });
+    socket.on("systemNums",function(systemNums){
+        $(".totalMessageNum").html(systemNums.checkedLength+systemNums.pendingLength+systemNums.deletedCount);
+        $(".checkedMessageNum").html(systemNums.checkedLength);
+        $(".pendingMessageNum").html(systemNums.pendingLength);
+        $(".deletedMessageNum").html(systemNums.deletedCount);
+        $(".totalMemberNum").html(systemNums.userLength);
+        $(".canAwardUserCount").html(systemNums.canAwardUserCount);
+        $(".toViewMessageNum").html(systemNums.toSwfLength);
+        $(".userCheckedLength").html(systemNums.userCheckedLength);
+        $(".errorMessageCount").html(systemNums.errorMessageCount);
+    });
+
+
+
+    $("table").delegate("input","click",function(e){
+        e.stopPropagation();
+        //return false;
+    });
+    $("table").delegate(".passBtn","click",onPassBtnClick);
+    $("table").delegate(".delBtn","click",onDelBtnClick);
+    $("table").delegate("tr","click",function(e){
+        if(e.target.nodeName=="INPUT"){return;}
+        var checkboxEl = $(this).find("input");
+        checkboxEl.attr("checked",!checkboxEl.attr("checked"));
+    });
+
+    $("#clearAllData").click(function(){
+        if(!confirm("清除所有数据不可恢复，Are You Sure？")){
+            return false;
+        }
+        $.get("/check?action=clear",function(){
+            window.location.reload();
+        })
+    });
+
+
+    var checkedAll = false;
+    $("#batchSelectAll").click(function(){
+        checkedAll = !checkedAll;
+        $("table input").attr("checked",checkedAll);
+    });
+
+    var onPassOrDelBatchBtnClick = function(){
+        var batchBtn = ($(this).attr("id") == "batchPass");
+        var doFun =  batchBtn ? passMessage : delMessage;
+        var checkBoxs = $("table input:checked");
+        if(!checkBoxs.length){
+            alert("请先勾选选择要处理的消息!");
+        }
+        if(!confirm("确定要批量让"+checkBoxs.length+"条消息"+(batchBtn?"通过":"删除")+"吗？")){
+            return false;
+        }
+        var checkBoxs = $("table input:checked");
+        var messageIds = [];
+        checkBoxs.each(function(key,checkbox){
+            checkbox = $(checkbox);
+            var messageID = checkbox.attr("messageID");
+            if(messageID)
+                messageIds.push(messageID);
+        });
+        var maxPostNum = 100;
+        if(messageIds.length>maxPostNum){
+            var times = 0;
+            var doTimes = 0;
+            while(true){
+                var messageSplitIds = messageIds.slice(times*maxPostNum,maxPostNum*times+maxPostNum);
+                doFun(messageSplitIds,function(){
+                    checkBoxs.slice(doTimes*maxPostNum,maxPostNum*doTimes+maxPostNum).each(function(key,checkbox){
+                        $(checkbox).parent().parent().remove();
+                    });
+                    doTimes ++;
+                });
+
+                times++;
+                if(times*maxPostNum>=messageIds.length){
+                    break;
+                }
+
+            }
+        }else{
+            doFun(messageIds,function(){
+                checkBoxs.each(function(key,checkbox){
+                    $(checkbox).parent().parent().remove();
+                });
+            });
+        }
+
+        checkedAll = false;
+        return false;
+    };
+    $("#batchPass").click(onPassOrDelBatchBtnClick);
+    $("#batchDel").click(onPassOrDelBatchBtnClick);
+
+    $(".cleanToSwfMessageBtn").click(function(){
+        if(confirm("确定要清空未到大屏幕显示的数据吗？")){
+            socket.emit('cleanToSwfMessage', true);
+        }
+    });
+
+    $(".viewAllMessageCheckedListBtn").click(function(){
+        if(confirm("确定要结束年会节目？这样弹幕可以把所有消息从头到尾爆炸的方式滚一个轮回；此操作不可逆，请确保在年会宣布结束的时候使用.")){
+            socket.emit('viewAllMessageCheckedList', true);
+            var mark = $("<div style='background:rgba(255,0,0,0.3);position: absolute;left:0;top:0;color:red;font-size:30px;text-align:center;line-height:300px;text-shadow:1px 2px 1px white;'>新年快乐</div>");
+            mark.css({
+                width:$("body").width(),
+                height:$("body").height(),
+            });
+            $("body").append(mark)
+        }
+    });
+
+    $(".pauseBtn").click(function(){
+        socket.emit('pausePushToView', true);
+    });
+    $(".boomBtn").click(function(){
+        socket.emit('boomView', true);
+    });
+
+</script>
+</body>
+</html>

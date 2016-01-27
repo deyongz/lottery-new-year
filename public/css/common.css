@@ -1,0 +1,183 @@
+body {
+    overflow: hidden;
+    background:#ed145b;
+    width:1280px;
+    height: 800px;
+    margin:0 auto;
+}
+
+div.item {
+    opacity: 0;
+    border: 1px solid #efeeea;
+    margin: 2px;
+    display: inline-block;
+    transition: all .25s;
+}
+
+div.number {
+    opacity: 0;
+    margin: 2px;
+    display: inline-block;
+    transition: all .15s;
+    color:#fff;
+    text-align: center;
+
+    background:#ed145b;
+    border:1px solid #ffffff;
+    border-radius:3px;
+    box-shadow: #444443 2px 1px 0px;
+    padding:0 2px;
+}
+
+div.item:hover{
+    background: red;
+    transform:scale(3,3);
+}
+.bless-images{
+    line-height: 0;
+    transition:all 0.5s;
+}
+div.background {
+    background: url('../images/background2016.jpg') no-repeat;
+    width:1280px;
+    height:800px;
+    margin:0 auto;
+    /*border: 1px solid #482832;
+    border-bottom:none;*/
+}
+div.ticket_background{
+    background: url('../images/background2016.jpg') no-repeat;
+}
+
+.gap {
+    height:80px;
+    width:100%;
+    text-align: left;
+    font-size: 50px;
+    color:white;
+    font-weight: bold;
+    padding:30px 23px 90px 23px;
+    position: relative;
+}
+.gap .gap_lun{position: absolute;left:23px;top:30px;}
+.gap .gap_info{text-align: center;}
+
+/*.ticket_background .gap{*/
+/*padding: 54px 122px;*/
+/*}*/
+
+div.title {
+    font-size: 40px;
+}
+
+div.front {
+    margin:0 auto;
+    width:97%;
+    height:71%;
+}
+div.front .dashboard {
+    height:115%;
+}
+
+
+div.front .first {
+    height:200%;
+}
+
+div.front .second {
+    background: rgba(255, 138, 154, 0.7);
+    line-height: 0;
+    padding:10px;
+    text-align:center;
+}
+
+
+div.front .reward {
+    line-height: normal;
+    margin:5px 0;
+    margin-left:20px;
+    color:white;
+    font-style: italic;
+    text-align:left;
+    width:580px;
+    height:102px;
+    float: left;
+    overflow: hidden;
+
+}
+div.front .reward img{
+    transition:all .2s;
+    width:102px;
+    height:102px;
+    box-shadow: #444443 4px 4px 10px;
+    display: block;
+    float: left;
+}
+div.front .reward div{
+    float: left;
+    width:470px;
+    padding-top:10px;
+}
+
+div.front .reward img:hover{
+    transform:scale(2,2);
+    /*opacity: .5;*/
+}
+.second img {
+
+}
+
+span.nickname {
+    position:relative;
+    margin-top: 20px;
+}
+
+div.selected {
+    padding-top: 20px;
+    z-index:9;
+}
+div.selected span {
+    width:27px;
+}
+div.appendix {
+    padding: 12px 0px;
+    z-index:10;
+    overflow:hidden;
+
+}
+div.award-number {
+    text-align:center;
+    line-height: 110px;
+    margin:50px;
+}
+div.award-number span{
+    padding:5px;
+    background:#ed145b;
+    border:1px solid #ffffff;
+    margin-right:15px;
+    margin-bottom:15px;
+    border-radius:4px;
+    box-shadow: #444443 2px 1px 0px;
+
+    font-size: 100px;
+    font-weight: bold;
+    color:white;
+    display:inline-block;
+    /*float:left;*/
+
+}
+
+span.award-nickname,
+span.award-msg{
+    margin-left:20px;
+    font-weight: bold;
+    font-size: 40px;
+    font-style: normal;
+    text-shadow: #444443 2px 1px 0px;
+}
+span.award-msg{font-size:30px;color:#e6e5ce;
+    text-shadow: red 0 1px 0;
+    font-size:20px;
+    white-space: nowrap;
+    text-emphasis: dot;
+}

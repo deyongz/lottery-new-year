@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>聚美优品成都2016年会-团队风采</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <script type="text/javascript">
+        var serverInfo = {serverUrl :"<%=serverInfo.serverUrl%>",serverHttpPort:"<%=serverInfo.serverHttpPort%>",socketPort:"<%=serverInfo.socketPort%>"}
+        var users = <%-lastYearUsers%>;
+    </script>
+    <style rel="stylesheet">
+        body {
+            overflow: hidden;
+            background: #ed145b;
+            width: 1280px;
+            height: 800px;
+            margin: 0 auto;
+        }
+        div.ticket_background {
+            background: url('/images/background2016.jpg') no-repeat;
+            width: 1280px;
+            height: 800px;
+        }
+        .imgWrap{width:1280px;height: 200px;position:relative;overflow: hidden;/*border:1px solid red;*/}
+        .item,.item img,.item .itemInfoWrap{width:200px;height: 200px;}
+        .item{position:absolute;top:0;z-index:3}
+        .item .itemInfoWrap{position:relative;}
+        .item .itemInfoWrap .itemNickName{display: block;position: absolute;
+            bottom: -20px;;opacity:0;left:0;width:200px;background:rgba(255,0,0,0.6);color:white;text-align:center;height:22px;
+            line-height:22px;white-space: nowrap;overflow: hidden;z-index: 3;}
+
+        .item3D{transition:200ms;transform: rotateY(90deg) rotateX(90deg); opacity: 0.1}
+        .lastTitle{font-size:14px;color:white;padding-bottom:5px;}
+
+
+
+        .zhuan_left{
+            transform: rotate(-30deg);
+        }
+        .zhuan_right{
+            transform: rotate(30deg);
+        }
+
+         .baidong {
+            transform-origin: 50% 0 0;
+            /*-webkit-transform-origin: 50% 0 0;
+            -webkit-transition: all 1s ease-in-out 0s;
+            -o-transition: all 1s ease-in-out 0s;
+            -moz-transition: all 1s ease-in-out 0s;*/
+            transition: all 4s ease-in-out 0s;
+
+            left:250px;
+            width:4px;
+             z-index:5;
+             position: relative;
+
+        }
+         .baidong .baidongWrap {position:relative;width:100%;height:100%;}
+         .baidong .centerLine{width:4px;background:#ccc;overflow: hidden;left:50%;margin-left:-2px;height:80px;position:absolute;z-index:4;}
+         .baidong img{max-width:500px;max-height:420px;position: absolute;left: -250px;top:50px;z-index: 5;border:5px solid #ccc;border-radius:5px;}
+        .baidong .teamTitle{position: absolute;color: white;font-size:14px;left:-34px;top:26px;white-space: nowrap;background:rgb(174,38,84);border:2px solid #ccc;padding:4px;border-radius:3px;}
+    </style>
+</head>
+<body>
+<div class="baidong"></div>
+
+<div class="background ticket_background">
+    <div style="height:540px;position:relative">
+        <div  id='wo' class="baidong">
+            <div class="baidongWrap">
+                <div class="teamTitle">团队 风采</div>
+                <div class="centerLine"></div>
+                <img src="/team/t00.jpg"/>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="lastTitle">回顾去年微信头像</div>
+    <div class="imgWrap">
+
+    </div>
+</div>
+
+
+</body>
+<script src="/js/jquery-2.0.3.js"></script>
+<script type="text/javascript">
+    $(function(){
+        var wrap = $(".imgWrap"),
+                wrapOffset = wrap.offset(),
+                wrapW = wrap.width(),
+                wrapH = wrap.height(),
+                itemW = wrapH;
+        var showNum = Math.floor(wrapW/itemW);
+        var offsetX = Math.floor((wrapW-itemW*showNum)/2);
+        $(".lastTitle").css({paddingLeft:offsetX});
+
+        var count = 0;
+        setInterval(function(){
+            if(count==0) {
+                var items = wrap.find(".item");
+                if (items.length) {
+                    var num = 0;
+                    var timer = setInterval(function () {
+                        var item = $(items[num]);
+                        item.addClass("item3D");
+                        setTimeout(function () {
+                            item.remove();
+                        }, 800);
+                        if (num + 1 == items.length) {
+                            clearInterval(timer);
+                        }
+                        num++;
+                    }, 300);
+                }
+            }
+            setTimeout(function(){
+                var user = users.splice(0,1)[0];
+                users.push(user);
+                var itemEl = $('<div class="item" style="z-index:1;left:'+wrapW+'px"><div class="itemInfoWrap"><img src="/'+user.headimg+'" /><div class="itemNickName">'+user.nickname+'</div></div></div>').appendTo(wrap);
+                var itemNickName = itemEl.find(".itemNickName");
+                itemEl.animate({
+                    left : offsetX + count*itemW-20
+                },"fast","swing")
+                itemEl.animate({
+                    left : offsetX + count*itemW
+                },"fast","swing",function(){
+                    itemNickName.animate({
+                        bottom : 0,
+                        opacity : 1
+                    },"slow","swing");
+                });
+
+                count++;
+                if(count>=showNum){count=0;}
+            },count==showNum?700:200);
+        },1500);
+    })
+
+
+    var i=0;
+    var imgCount = 0;
+    setInterval('gaibian()',4000);
+
+    var teamImg = $("#wo");
+    gaibian()
+    function gaibian(){
+        if(i==0){
+            i=1;
+            teamImg.removeClass("zhuan_left");
+            teamImg.addClass("zhuan_right");
+        }else{
+            i=0;
+            teamImg.find("img").attr("src","/team/t"+(imgCount++)+".jpg");
+            teamImg.addClass("zhuan_left");
+            teamImg.removeClass("zhuan_right");
+            if(imgCount>86){imgCount = 0;}
+        }
+
+    }
+</script>
+</html>

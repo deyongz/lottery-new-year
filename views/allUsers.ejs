@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>所有参与的微信用户</title>
+    <style type="text/css">
+        .weixinUserWrap {padding:5px;float:left;;height:120px;}
+        .weixinUserWrap img{width:60px;height:60px;}
+        .num{position: absolute;left:0;top:0;background:#ff1e02;color:#fff;font-size:12px;padding:4px;border-radius:3px;}
+        .messageWrap{border:1px solid red;background:#fff;position:absolute;left:0;top:80px;width:200px;z-index:2;border-radius:5px;display:none;word-break:break-all;}
+        .weixinUserWrap:hover .messageWrap{display:block;}
+    </style>
+</head>
+<body>
+<div>
+<script type="text/javascript">
+
+</script>
+<h1>所有用户数量:<%=Object.keys(allUserInfo).length%></h1></div>
+<div style="border:1px solid #ccc;overflow:hidden;">
+<% for(var i in allUserInfo){var user = allUserInfo[i];var messageList = messageCheckedList[i].messageList;%>
+<div class="weixinUserWrap">
+    <div style="position:relative;">
+        <div class="num"><%=messageList.length%></div>
+        <img src="<%=user.headimgurl%>" title="<%=user.nickname%>"><br/>
+
+        <%if(messageList && messageList.length){%>
+        <div class="messageWrap">
+            <% for(var j in messageList){var num = 1+Number(j);%>
+            <p><%=num%>:<%=messageList[j].msg%></p>
+            <%}%>
+        </div>
+        <% } %>
+    </div>
+    <div style="width:60px;overflow:hidden;">
+        <%=user.nickname%>
+    </div>
+
+</div>
+<% } %>
+</div>
+</body>
+</html>
