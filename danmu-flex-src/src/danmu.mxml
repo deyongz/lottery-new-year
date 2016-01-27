@@ -1,0 +1,247 @@
+<s:WindowedApplication  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/halo"
+					   minWidth = "540"
+					   minHeight = "370"
+					   creationComplete="init()" closing="onExit(event)" xmlns:mx1="library://ns.adobe.com/flex/mx"> 
+	
+	<s:Label text="消息请求控制器" y="10" x="210" fontWeight="bold" color="0xff0000"/>
+	
+	<s:Button id="b1" label="批量文字显示" x="40" y="30" /><s:Button click="stopBatchMessage(event)" label="停止批量文字显示" x="135" y="30" />
+	<s:Button id="b2" label="暂停显示(可以清屏)"  x="40" y="60"/>
+	<s:Label text="显示屏幕" x="40" y="95" />
+	<s:Button id="mainScreenBtn" label="主显示屏"  x="100" y="90"/>
+	<s:Button id="preScreenBtn" label="次显示屏"  x="180" y="90"/>
+	<s:Button id="bt3" label="显示窗口可移动"  x="40" y="120"/><s:Label text="拖拽弹幕可以移动窗口" x="150" y="125" />
+	
+	<s:Label text="显示垂直位置" x="40" y="150" /><s:HSlider id="vSlider" change="vSliderChange(event)" x="150" y="150" maximum="100" minimum="0"/>
+	<s:Label text="昵称颜色" x="40" y="180" /><s:Label text="内容颜色" x="140" y="180" />
+	<mx1:ColorPicker id="nameColor" change="nameColorChange(event)" x="90" y="175"/><mx1:ColorPicker id="contentColor" change="contentColorChange(event)" x="190" y="175"/>
+	
+	<s:Label text="字体大小" x="230" y="180" /><s:HSlider id="fontSizeSlider" change="fontSizeSliderChange(event)" x="280" y="180" maximum="60" minimum="12"/>
+	
+	<s:Label text="移动速度" x="40" y="210" /><s:HSlider id="moveSpeed" change="moveSpeedChange(event)" x="90" y="210" maximum="15" minimum="1"/>
+	<s:Label text="批量模式速度" x="200" y="210" /><s:HSlider id="batchMoveSpeed" change="batchMoveSpeedChange(event)" x="274" y="210" maximum="15" minimum="1"/>
+	
+	<s:Label text="消息请求地址，以http://开头" x="300" y="30" />
+	<s:TextInput text="http://172.20.81.104:8080" id="urlInput" x="300" y="55" width="200"></s:TextInput>
+	<s:Button id="b5" label="开始请求消息"  x="300" y="85"/>
+	<s:Label text="待显示消息条数：" x="300" y="115" />
+	<s:Label id="laveMessageNumLabel" text="0" x="400" y="118" />
+	
+	<s:TextArea id="messageView" width="460" height="60" x="40" y="240" />
+	
+	<s:Button click="simulationData(event)" label="模拟1000条数据用于测试"  x="40" y="310"/>
+	
+	
+	<fx:Script> 
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			
+			import Main;
+			private var mainClass : Main;
+			private var config : Object;
+			private function init():void{ 
+				//this.nativeWindow.systemChrome = NativeWindowSystemChrome.NONE;
+				//loader.addEventListener(MouseEvent.MOUSE_DOWN,mousedownHandle);
+				initNewWindow();
+				readConfigFile();
+				//var a :IVisualElement = new IVisualElement();
+			} 
+			private function onExit(e:Event):void
+			{
+				e.preventDefault();
+				Alert.show("目前还有"+laveMessageNumLabel.text+"条消息没有显示，退出后这些消息都将全部丢失，确定退出？","确定退出吗？",Alert.NONMODAL|Alert.YES|Alert.NO,this,button1_clickHandler);
+			}
+			protected function button1_clickHandler(event:CloseEvent):void
+			{
+				if (event.detail==Alert.YES){
+					//保存配置文件
+					var fs:FileStream = new FileStream();
+					fs.open(new File(File.applicationDirectory.nativePath+"/config.JSON"),FileMode.WRITE);
+					fs.writeUTFBytes(JSON.stringify(config));
+					fs.close();
+					
+					NativeApplication.nativeApplication.exit();
+				}
+				
+				//NativeApplication.nativeApplication.icon.bitmaps = [];
+				//NativeApplication.nativeApplication.exit();                    
+				
+			}
+			private function initNewWindow():void{ 
+				b1.addEventListener(MouseEvent.CLICK,showBatchMessage);
+				b2.addEventListener(MouseEvent.CLICK,pauseShow);
+				b5.addEventListener(MouseEvent.CLICK,beginConnectServer);
+				mainScreenBtn.addEventListener(MouseEvent.CLICK,switchScreen);
+				preScreenBtn.addEventListener(MouseEvent.CLICK,switchScreen);
+				bt3.addEventListener(MouseEvent.CLICK,canMoveDanmu);
+				if(Screen.screens.length==1){
+					preScreenBtn.visible = false;
+				}
+				function switchScreen(e:MouseEvent):void{
+					if(e.target.id=="mainScreenBtn"){
+						mainClass.showNativeWindow(0);
+						messageView.text = "弹幕已经移动到主显示屏\n"+messageView.text;
+					}else{
+						mainClass.showNativeWindow(1);
+						messageView.text = "弹幕已经移动到次显示屏\n"+messageView.text;
+					}
+				}
+				function canMoveDanmu(e:MouseEvent):void{
+					if(mainClass.canMove){
+						bt3.label = "显示窗口可移动";
+						messageView.text = "显示窗口已经设置不能移动\n"+messageView.text;
+						mainClass.canMove = false;
+					}else{
+						bt3.label = "显示窗口不能移动";
+						messageView.text = "显示窗口已经设置可以移动\n"+messageView.text;
+						mainClass.canMove = true;
+					}
+				}
+				mainClass = new Main(this,laveMessageNumLabel);
+				
+			} 
+			private function showBatchMessage(e:MouseEvent):void{
+				if(mainClass.batchShowStoping){
+					messageView.text = "正在停止批量显示，等停止完成后，重新点击批量显示消息按钮\n"+messageView.text;
+					return;
+				}
+				messageView.text = "已经开始批量显示消息\n"+messageView.text;
+				mainClass.batchShowMessage();
+			}
+			
+			private function stopBatchMessage(e:MouseEvent):void{
+				messageView.text = "已停止批量显示消息\n"+messageView.text;
+				mainClass.stopBatchShow();
+			}
+			private function pauseShow(e:MouseEvent):void{
+				if(mainClass.pause){
+					mainClass.pause = false;
+					b2.label = "暂停显示(可以清屏)";
+				}else{
+					mainClass.pause = true;
+					b2.label = "继续显示";
+				}
+			}
+			
+			private function beginConnectServer(e:MouseEvent):void{
+				trace(urlInput.text);
+				if(b5.label == "关闭消息请求"){
+					b5.label = "开始请求消息";
+					mainClass.serverUrl = "";
+					return;
+				}
+				if(!urlInput.text){
+					messageView.text = "请输入服务器地址\n"+messageView.text;
+					return;
+				}else if(urlInput.text.replace("http://")==urlInput.text){
+					messageView.text = "注意：服务器地址没有以http://开头\n"+messageView.text;
+				}
+				
+				mainClass.serverUrl = urlInput.text;
+				config.serverUrl = urlInput.text;
+				b5.label = "关闭消息请求";
+				//mainClass.batchShowMessage();
+			}
+			private function vSliderChange(event:Object):void{
+				var num : int = event.target.value;
+				config.pos = num;
+				mainClass.hPos = num;
+			}
+			private function moveSpeedChange(event:Object):void{
+				var num : int = event.target.value;
+				config.moveSpeed = num;
+				mainClass.moveSpeed = num;
+			}
+			private function batchMoveSpeedChange(event:Object):void{
+				var num : int = event.target.value;
+				config.batchMoveSpeed = num;
+				mainClass.batchMoveSpeed = num;
+			}
+			private function contentColorChange(event:Object):void{
+				var color : int = contentColor.selectedColor;
+				config.contentColor = color;
+				mainClass.contentColor = color;
+			}
+			
+			
+			private function nameColorChange(event:Object):void{
+				var color : int = nameColor.selectedColor;
+				config.nameColor = color;
+				mainClass.nameColor = color;
+			}
+			
+			private function fontSizeSliderChange(event:Object):void{
+				var num : int = event.target.value;
+				config.fontSize = num;
+				mainClass.fontSize = num;
+			}
+			
+			private function mousedownHandle( e:MouseEvent):void{ 
+				//nativewindow.startMove();
+			}
+			
+			
+			private function readConfigFile():void
+			{
+				var loader:URLLoader=new URLLoader();
+				//var urlFilepath:URLRequest=new URLRequest("Missyou.txt");
+				var urlFilepath:URLRequest=new URLRequest("app:/config.JSON");
+				loader.addEventListener(Event.COMPLETE,loadTextComplete);
+				loader.load(urlFilepath);
+			}
+			private function loadTextComplete(event:Event):void
+			{
+				//event.target.data.toString(); 
+				trace(event.target.data);
+				config  = JSON.parse(event.target.data);
+				
+				//显示位置
+				vSlider.value = config.pos;
+				mainClass.hPos = config.pos;
+				//服务器地址
+				urlInput.text = config.serverUrl;
+				//文字大小
+				fontSizeSlider.value = config.fontSize;
+				mainClass.fontSize = config.fontSize;
+				//文字颜色
+				mainClass.nameColor = config.nameColor;
+				mainClass.contentColor = config.contentColor;
+				nameColor.selectedColor = config.nameColor;
+				contentColor.selectedColor = config.contentColor;
+				//移动速度
+				mainClass.moveSpeed = config.moveSpeed;
+				mainClass.batchMoveSpeed = config.batchMoveSpeed;
+				moveSpeed.value = config.moveSpeed;
+				batchMoveSpeed.value = config.batchMoveSpeed;
+				
+				
+				
+				/*
+				var file:File = new File();
+				file.browseForOpen("Select a text file",[new FileFilter("text file","*.JSON")]);
+				file.addEventListener(Event.SELECT,onFileSelect);
+				function onFileSelect(e:Event):void{
+					
+					var fs:FileStream = new FileStream();
+					trace( File(e.target).nativePath);
+					fs.open(File(e.target),FileMode.READ);
+					trace(fs.readUTFBytes(fs.bytesAvailable));
+					fs.close();
+					
+				}*/
+				
+				
+				
+			}
+			private function simulationData(event:Object):void{
+				mainClass.simulationData();
+			}
+			               
+		]]>
+	</fx:Script> 
+	
+</s:WindowedApplication>

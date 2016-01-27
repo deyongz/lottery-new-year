@@ -494,7 +494,7 @@ function addWeixinLish(weixinList){
                 dbugUserCount-=Object.keys(testUser).length;
             }
             var p = "[\""+userIdArray.join('","')+"\"]";
-            request.post('http://wx.jumei.com/Activity/Jumei2015_UserInfos?callback=myFunction',{form:{content:p}}, function (error, response, body) {
+            request.post('http://webservice.url.com?callback=myFunction',{form:{content:p}}, function (error, response, body) {
                 if (!error && response.statusCode == 200) {
                     body +="inserttxt;";
                     body = body.replace("myFunction","").replace("inserttxt;","");
