@@ -23,7 +23,7 @@ var each = function(array,callback){
 };
 
 //服务器信息，用于抽奖页面请求地址的配置
-global.serverInfo = {serverUrl : "http://192.168.175.53",serverHttpPort:"8080",socketPort:"8081"};
+global.serverInfo = {serverUrl : "http://127.0.0.1",serverHttpPort:"8080",socketPort:"8081"};
 
 
 var initComplete = 0;
